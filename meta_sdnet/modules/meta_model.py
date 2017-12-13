@@ -14,7 +14,6 @@ class LRN(nn.Module):
         super(LRN, self).__init__()
 
     def forward(self, x):
-        #
         # x: N x C x H x W
         pad = Variable(x.data.new(x.size(0), 1, 1, x.size(2), x.size(3)).zero_())
         x_sq = (x**2).unsqueeze(dim=1)
@@ -302,28 +301,6 @@ class BinaryLoss(nn.Module):
         loss = pos_loss.sum() + neg_loss.sum()
         return loss
 
-class BinaryFocalLoss(nn.Module):
-    def __init__(self):
-        super(BinaryFocalLoss, self).__init__()
-        self.gamma = 2
- 
-    def forward(self, pos_score, neg_score):
-        pos_p = F.softmax(pos_score)[:,1]
-        neg_p = F.softmax(neg_score)[:,0]
-        pos_logp = F.log_softmax(pos_score)[:,1]
-        neg_logp = F.log_softmax(neg_score)[:,0]
-#        pos_logp = pos_p.log()
-#        neg_logp = neg_p.log()
-
-        pos_loss = -torch.pow((1-pos_p),self.gamma)*pos_logp
-        neg_loss = -torch.pow((1-neg_p),self.gamma)*neg_logp
-
-        #pos_loss = -F.log_softmax(pos_score)[:,1]
-        #neg_loss = -F.log_softmax(neg_score)[:,0]
-        
-        loss = pos_loss.sum() + neg_loss.sum()
-        return loss
-
 class Accuracy():
     def __call__(self, pos_score, neg_score):
         
@@ -336,12 +313,3 @@ class Accuracy():
 
         return tot_acc.data[0], pos_acc.data[0], neg_acc.data[0]
 
-
-class Precision():
-    def __call__(self, pos_score, neg_score):
-        
-        scores = torch.cat((pos_score[:,1], neg_score[:,1]), 0)
-        topk = torch.topk(scores, pos_score.size(0))[1]
-        prec = (topk < pos_score.size(0)).float().sum() / (pos_score.size(0)+1e-8)
-        
-        return prec.data[0]

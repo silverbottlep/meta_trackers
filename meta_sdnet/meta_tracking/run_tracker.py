@@ -238,8 +238,7 @@ def run_meta_tracker(seq, img_list, init_bbox, gt=None, savefig_dir='', display=
     pos_feats_all = [pos_feats]
     neg_feats_all = [neg_feats]
 
-    spf_total = time.time()-tic
-    print ("Initial Training Time %.3f"%spf_total)
+    print ("Initial Training Time %.3f"%(time.time()-tic))
 
     # Display
     savefig = savefig_dir != ''
@@ -354,9 +353,6 @@ def run_meta_tracker(seq, img_list, init_bbox, gt=None, savefig_dir='', display=
                 neg_data = torch.cat([neg_data,neg_feat],0)
             train_online(online_net, online_optimizer, criterion, pos_data, neg_data, opts['n_tracker_updates'])
         
-        spf = time.time()-tic
-        spf_total += spf
-
         # Display
         if display or savefig:
             im.set_data(image)
@@ -374,12 +370,11 @@ def run_meta_tracker(seq, img_list, init_bbox, gt=None, savefig_dir='', display=
                 fig.savefig(os.path.join(savefig_dir,'%04d.jpg'%(i)),dpi=dpi)
 
         if gt is None:
-            print ("%s: Frame %d/%d, Score %.3f, Time %.3f"%(seq, i, len(img_list), target_score, spf))
+            print ("%s: Frame %d/%d, Score %.3f"%(seq, i, len(img_list), target_score))
         else: 
-            print ("%s: Frame %d/%d, Overlap %.3f, Score %.3f, Time %.3f"%(seq, i, len(img_list), overlap_ratio(gt[i],result_bb[i])[0], target_score, spf))
+            print ("%s: Frame %d/%d, Overlap %.3f, Score %.3f"%(seq, i, len(img_list), overlap_ratio(gt[i],result_bb[i])[0], target_score))
 
-    fps = len(img_list) / spf_total
-    return result, result_bb, fps
+    return result, result_bb
 
 def get_sequence(seq, seq_home):
     img_dir = os.path.join(seq_home, seq, 'img')
@@ -423,7 +418,7 @@ if __name__ == "__main__":
         img_list, init_bbox, gt = get_sequence(seq, data_dir)
 
         # Run tracker
-        result, result_bb, fps = run_meta_tracker(seq, img_list, init_bbox, gt=gt, savefig_dir='', display=args.display)
+        result, result_bb = run_meta_tracker(seq, img_list, init_bbox, gt=gt, savefig_dir='', display=args.display)
 
         thresholds = np.arange(0,1.05,0.05)
         n_frame = len(gt)
@@ -438,6 +433,6 @@ if __name__ == "__main__":
         res = {}
         res['results'] = []
         res['results'].append({'res': result_bb.round().tolist(), 'type': 'rect', 'success': success.tolist(),
-                             'len': len(result_bb), 'fps':fps, 'anno':gt.round().tolist()})
-        json.dump(res, open('../result/' + args.seq + '_' + tracker_name + '.json', 'w'), indent=2)
-        io.savemat('../result/' + args.seq +  '_' + tracker_name + '.mat',res)
+                             'len': len(result_bb), 'anno':gt.round().tolist()})
+        json.dump(res, open('../result/' + seq + '_' + tracker_name + '.json', 'w'), indent=2)
+        io.savemat('../result/' + seq +  '_' + tracker_name + '.mat',res)
