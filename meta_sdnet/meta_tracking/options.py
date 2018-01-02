@@ -30,7 +30,6 @@ opts['overlap_pos_update'] = [0.7, 1]
 opts['overlap_neg_update'] = [0, 0.3]
 opts['w_decay'] = 0.0005
 opts['momentum'] = 0.9
-opts['lr_mult'] = {'fc.fc6':10}
 
 opts['n_pos_update'] = 50 #5 #50
 opts['n_neg_update'] = 200 #20 #200

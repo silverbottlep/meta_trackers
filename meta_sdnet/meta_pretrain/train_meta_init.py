@@ -91,21 +91,19 @@ def train_init(tracker_net, meta_alpha, loss_fn, pos_regions, neg_regions, lh_po
 img_home = '../../dataset/'
 ilsvrc_home = '/home/eunbyung/Works2/data/ILSVRC/Data/VID'
 train_ilsvrc_data_path = 'data/ilsvrc_train.json'
-val_data_path = 'data/ilsvrc_val.json'
-val_metadata_path = 'data/ilsvrc_val_meta.json'
 
 # for OTB experiment
-#train_tracking_data_path = 'data/vot-otb.pkl'
-#opts['output_path'] = '../models/meta_init_vot_ilsvrc_new.pth'
+train_tracking_data_path = 'data/vot-otb.pkl'
+opts['output_path'] = '../models/meta_init_vot_ilsvrc.pth'
 
 # for VOT experiment
-train_tracking_data_path = 'data/otb-vot.pkl' #for VOT experiment
-opts['output_path'] = '../models/meta_init_otb_ilsvrc_new.pth'
+#train_tracking_data_path = 'data/otb-vot.pkl' #for VOT experiment
+#opts['output_path'] = '../models/meta_init_otb_ilsvrc.pth'
 
 opts['init_model_path'] = '../models/imagenet-vgg-m.mat'
 opts['n_init_updates'] = 1
 opts['label_shuffling'] = True
-opts['n_meta_updates'] = 10000
+opts['n_meta_updates'] = 15000
 
 def train_meta_sdnet():
     # save file name
@@ -157,11 +155,11 @@ def train_meta_sdnet():
                       'meta_alpha': meta_alpha,
                       'loss_list':loss_list, 'lh_loss_list':lh_loss_list,
                       'acc_list':acc_list, 'lh_acc_list':lh_acc_list}
-            print("Save model to %s"%opts['output_path'])
+            print("Save model to %s"%(opts['output_path']))
             torch.save(states, opts['output_path'])
 
         # train all layers after 5000 meta updates
-        if (i+1)%10==0:
+        if (i+1)%5000==0:
             train_all = True
             tracker_net = MetaSDNetFull(opts['init_model_path'])
             if opts['use_gpu']:
@@ -189,6 +187,11 @@ def train_meta_sdnet():
                     meta_alpha[k]=alpha
             meta_alpha_params = [p for k,p in meta_alpha.items()]
             meta_alpha_optimizer = optim.Adam(meta_alpha_params, lr = opts['meta_alpha_lr'])
+
+        # learning rate decay after 10000 meta updates
+        if (i+1)%10000==0:
+            meta_init_optimizer = optim.Adam(meta_init_params, lr = opts['meta_init_lr']*0.1)
+            meta_alpha_optimizer = optim.Adam(meta_alpha_params, lr = opts['meta_alpha_lr']*0.1)
 
         tic = time.time()
         for j in range(opts['meta_batch_size']):

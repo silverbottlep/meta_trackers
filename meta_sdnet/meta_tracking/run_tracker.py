@@ -47,7 +47,7 @@ def extract_regions(image, samples, crop_size, padding):
     regions = regions.astype('float32') - 128.
     return regions
 
-def set_optimizer(model, lr_base, lr_mult=opts['lr_mult'], momentum=opts['momentum'], w_decay=opts['w_decay']):
+def set_optimizer(model, lr_base, lr_mult, momentum=opts['momentum'], w_decay=opts['w_decay']):
     params = model.get_learnable_params()
     param_list = []
     for k, p in params.items():
@@ -56,9 +56,7 @@ def set_optimizer(model, lr_base, lr_mult=opts['lr_mult'], momentum=opts['moment
             if k.startswith(l):
                 lr = lr_base * m
         param_list.append({'params': [p], 'lr':lr})
-        #param_list.append({'params': [p], 'lr':lr_base, 'weight_decay':w_decay})
     optimizer = optim.SGD(param_list, lr = lr, momentum=momentum, weight_decay=w_decay)
-    #optimizer = optim.Adam(param_list)
     return optimizer
 
 def train_init(init_net, meta_alpha, loss_fn, image, target_bbox, evaluator):
@@ -226,7 +224,7 @@ def run_meta_tracker(seq, img_list, init_bbox, gt=None, savefig_dir='', display=
     online_net.set_learnable_params(['fc'])
     if opts['use_gpu']:
         online_net = online_net.cuda()
-    online_optimizer = set_optimizer(online_net, opts['lr_update'])
+    online_optimizer = set_optimizer(online_net, opts['lr_update'], opts['lr_mult'])
     print("\t[Init] init_acc:%.4f, acc:%.4f"%(init_acc, first_acc))
     
     # Init sample generators
@@ -387,15 +385,15 @@ def get_sequence(seq, seq_home):
     return img_list, gt[0], gt
 
 data_dir = '../../dataset/OTB'
-opts['grad_clip'] = 100
+opts['lr_mult'] = {'fc.fc6':10}
+opts['grad_clip'] = 1000
 opts['n_init_updates'] = 1
 opts['n_tracker_updates'] = 15
-opts['lr_update'] = 0.0001
+opts['lr_update'] = 0.00005
 opts['init_model_path'] = '../models/imagenet-vgg-m.mat'
 opts['meta_tracker_path'] = '../models/meta_init_vot_ilsvrc.pth'
    
 if __name__ == "__main__":
-    
     parser = argparse.ArgumentParser()
     parser.add_argument('-d', '--display', action='store_true')
     
@@ -434,5 +432,5 @@ if __name__ == "__main__":
         res['results'] = []
         res['results'].append({'res': result_bb.round().tolist(), 'type': 'rect', 'success': success.tolist(),
                              'len': len(result_bb), 'anno':gt.round().tolist()})
-        json.dump(res, open('../result/' + seq + '_' + tracker_name + '.json', 'w'), indent=2)
-        io.savemat('../result/' + seq +  '_' + tracker_name + '.mat',res)
+        json.dump(res, open('../result4/otb/' + seq + '_' + tracker_name + '.json', 'w'), indent=2)
+        io.savemat('../result4/otb/' + seq +  '_' + tracker_name + '.mat',res)
