@@ -3,6 +3,7 @@ import sys
 import pickle
 import time
 import scipy.io
+import argparse
 
 import torch
 import torch.optim as optim
@@ -130,7 +131,7 @@ def resize_feat_cos_window(feat, cos_window):
     feat = feat*cos_window
     return feat
 
-def meta_pretrain():
+def train_meta_crest():
     train_dataset = ILSVRCDataset(train_ilsvrc_data_path, ilsvrc_home+'/train')
     train_tracking_dataset = TrackingDataset(train_tracking_data_path)
 
@@ -230,22 +231,13 @@ def meta_pretrain():
         meta_update(meta_init, meta_init_grads, meta_alpha, meta_alpha_grads,
                     meta_init_optimizer, meta_alpha_optimizer)
 
-ilsvrc_home = '/home/eunbyung/Works2/data/ILSVRC/Data/VID'
+ilsvrc_home = '../../dataset/VID'
 feat_extractor_path = '../models/imagenet-vgg-verydeep-16.mat'
 train_ilsvrc_data_path = '../../dataset/ilsvrc_train.json'
-
-# for OTB experiment
-train_tracking_data_path = '../../dataset/vot-otb.pkl'
-output_path = '../models/meta_init_vot_ilsvrc.pth'
-
-# for VOT experiment
-#train_tracking_data_path = '../../dataset/otb-vot.pkl' #for VOT experiment
-#output_path = '../models/meta_init_otb_ilsvrc.pth'
 
 use_gpu = True
 
 n_init_updates = 1
-
 meta_init_lr = 1e-6
 meta_alpha_init = 1e-6
 meta_alpha_lr = 1e-6
@@ -259,4 +251,18 @@ motion_sigma_factor = 0.6
 cell_sz = 4.0
 
 if __name__ == "__main__":
-    meta_pretrain()
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-e', '--experiment', default='OTB', help='OTB or VOT')
+    args = parser.parse_args()
+    if args.experiment=='OTB':
+        # for OTB experiment
+        train_tracking_data_path = '../../dataset/vot-otb.pkl'
+        output_path = '../models/meta_init_vot_ilsvrc.pth'
+        print('meta-training for OTB experiment')
+    elif args.experiment=='VOT':
+        # for VOT experiment
+        train_tracking_data_path = '../../dataset/otb-vot.pkl' #for VOT experiment
+        output_path = '../models/meta_init_otb_ilsvrc.pth'
+        print('meta-training for VOT experiment')
+    
+    train_meta_crest()

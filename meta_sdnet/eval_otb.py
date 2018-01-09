@@ -56,7 +56,7 @@ def get_gt_bb(seq):
     return gt
 
 def get_result_bb(seq, arch):
-    result_path = '../result/otb/' + seq + '_' + arch + '.json'
+    result_path = './result/otb/' + seq + '_' + arch + '.json'
     with open(result_path, 'r') as f:
         temp = json.load(f)
     return np.array(temp['results'][0]['res'])
@@ -65,7 +65,7 @@ def convert_bb_to_center(bboxes):
     return np.array([(bboxes[:,0]+(bboxes[:,2]-1)/2),
                       (bboxes[:,1]+(bboxes[:,3]-1)/2)]).T
 
-data_dir = '../../dataset/OTB'
+data_dir = '../dataset/OTB'
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('-s', '--seq', default='', help='input seq')

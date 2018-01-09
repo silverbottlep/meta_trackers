@@ -3,6 +3,7 @@ import sys
 import pickle
 import time
 import scipy.io
+import argparse
 
 import torch
 import torch.optim as optim
@@ -88,17 +89,8 @@ def train_init(tracker_net, meta_alpha, loss_fn, pos_regions, neg_regions, lh_po
         meta_alpha_grads[tracker_keys[i]] = alpha_grads[i]
     return meta_init_grads, meta_alpha_grads, loss.data[0], lh_loss.data[0], acc, lh_acc
 
-img_home = '../../dataset/'
-ilsvrc_home = '/home/eunbyung/Works2/data/ILSVRC/Data/VID'
-train_ilsvrc_data_path = 'data/ilsvrc_train.json'
-
-# for OTB experiment
-train_tracking_data_path = 'data/vot-otb.pkl'
-opts['output_path'] = '../models/meta_init_vot_ilsvrc.pth'
-
-# for VOT experiment
-#train_tracking_data_path = 'data/otb-vot.pkl' #for VOT experiment
-#opts['output_path'] = '../models/meta_init_otb_ilsvrc.pth'
+ilsvrc_home = '../../dataset/VID'
+train_ilsvrc_data_path = '../../dataset/ilsvrc_train.json'
 
 opts['init_model_path'] = '../models/imagenet-vgg-m.mat'
 opts['n_init_updates'] = 1
@@ -230,4 +222,18 @@ def train_meta_sdnet():
                     meta_init_optimizer, meta_alpha_optimizer)
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-e', '--experiment', default='OTB', help='OTB or VOT')
+    args = parser.parse_args()
+    if args.experiment=='OTB':
+        # for OTB experiment
+        train_tracking_data_path = '../../dataset/vot-otb.pkl'
+        opts['output_path'] = '../models/meta_init_vot_ilsvrc.pth'
+        print('meta-training for OTB experiment')
+    elif args.experiment=='VOT':
+        # for VOT experiment
+        train_tracking_data_path = '../../dataset/otb-vot.pkl' #for VOT experiment
+        opts['output_path'] = '../models/meta_init_otb_ilsvrc.pth'
+        print('meta-training for VOT experiment')
+    
     train_meta_sdnet()
