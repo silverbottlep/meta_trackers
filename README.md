@@ -20,7 +20,7 @@ $(meta_trackers_root)/dataset/ilsvrc_train.json # meta file for loading ILSVRC V
 $(meta_trackers_root)/dataset/vot-otb.pkl # meta file for loading VOT dataset to meta-train(for OTB experiments)
 $(meta_trackers_root)/dataset/otb-vot.pkl # meta file for loading OTB dataset to meta-train(for VOT experiments)
 ```
-Also need to download imagenet pretrained model(our base feature extractors) [imagenet-vgg-verydeep-16.mat](http://www.vlfeat.org/matconvnet/models/imagenet-vgg-verydeep-16.mat) into $(meta_trackers_root)/meta_crest(and meta_sdnet)/models/
+Also need to download imagenet pretrained models(our base feature extractors) into $(meta_trackers_root)/meta_crest(and meta_sdnet)/models/. (We used the same networks that original trackers used. For meta_sdnet - [imagenet-vgg-m.mat](http://www.vlfeat.org/matconvnet/models/imagenet-vgg-m.mat), and for meta_crest - [imagenet-vgg-verydeep-16.mat](http://www.vlfeat.org/matconvnet/models/imagenet-vgg-verydeep-16.mat))
 
 ## 1. Meta-Training
 You can skip this step and download pretrain models, and use them to test the trackers. If you want to meta-train MetaCREST trackers,
